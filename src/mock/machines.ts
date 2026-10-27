@@ -1,0 +1,82 @@
+import type { Machine } from '@/types'
+
+export const machines: Machine[] = [
+  {
+    id: 'mch-1',
+    name: 'CNC Mill #1',
+    productionLine: 'Line B – Machining',
+    status: 'running',
+    capacityHoursPerDay: 16,
+    utilizationPct: 78,
+    downtimeEvents: [
+      { id: 'dt-1', machineId: 'mch-1', reason: 'Tool changeover', start: '2026-08-20T06:00:00Z', end: '2026-08-20T06:45:00Z', category: 'changeover' },
+    ],
+  },
+  {
+    id: 'mch-2',
+    name: 'CNC Mill #2',
+    productionLine: 'Line B – Machining',
+    status: 'idle',
+    capacityHoursPerDay: 16,
+    utilizationPct: 42,
+    downtimeEvents: [],
+  },
+  {
+    id: 'mch-3',
+    name: 'SMT Assembly Line 1',
+    productionLine: 'Line A – Assembly',
+    status: 'running',
+    capacityHoursPerDay: 20,
+    utilizationPct: 91,
+    downtimeEvents: [],
+  },
+  {
+    id: 'mch-4',
+    name: 'SMT Assembly Line 2',
+    productionLine: 'Line A – Assembly',
+    status: 'down',
+    capacityHoursPerDay: 20,
+    utilizationPct: 12,
+    downtimeEvents: [
+      { id: 'dt-2', machineId: 'mch-4', reason: 'Pick-and-place head jam', start: '2026-08-22T02:00:00Z', category: 'breakdown' },
+    ],
+  },
+  {
+    id: 'mch-5',
+    name: 'Injection Molder #3',
+    productionLine: 'Line C – Fabrication',
+    status: 'running',
+    capacityHoursPerDay: 24,
+    utilizationPct: 84,
+    downtimeEvents: [],
+  },
+  {
+    id: 'mch-6',
+    name: 'Stamping Press #2',
+    productionLine: 'Line C – Fabrication',
+    status: 'maintenance',
+    capacityHoursPerDay: 16,
+    utilizationPct: 30,
+    downtimeEvents: [
+      { id: 'dt-3', machineId: 'mch-6', reason: 'Scheduled preventive maintenance', start: '2026-08-21T22:00:00Z', end: '2026-08-23T06:00:00Z', category: 'planned_maintenance' },
+    ],
+  },
+  {
+    id: 'mch-7',
+    name: 'Auto Packaging Cell A',
+    productionLine: 'Line D – Packaging',
+    status: 'running',
+    capacityHoursPerDay: 18,
+    utilizationPct: 66,
+    downtimeEvents: [],
+  },
+  {
+    id: 'mch-8',
+    name: 'Auto Packaging Cell B',
+    productionLine: 'Line D – Packaging',
+    status: 'idle',
+    capacityHoursPerDay: 18,
+    utilizationPct: 25,
+    downtimeEvents: [],
+  },
+]
