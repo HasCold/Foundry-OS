@@ -16,6 +16,8 @@ import { QualityPage } from '@/features/quality/components/QualityPage'
 import { ProcurementPage } from '@/features/procurement/components/ProcurementPage'
 import { AnalyticsPage } from '@/features/analytics/components/AnalyticsPage'
 import { FinanceDashboardPage } from '@/features/finance/components/FinanceDashboardPage'
+import { BasicInfoPage } from '@/features/setup/components/BasicInfoPage'
+import { BusinessDetailsPage } from '@/features/setup/components/BusinessDetailsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +43,8 @@ export default function App() {
             {/* Everything else requires an authenticated in-memory session. */}
             <Route element={<RequireAuth />}>
               <Route element={<AppLayout />}>
+                <Route path="/setup/basic-info" element={<BasicInfoPage />} />
+                <Route path="/setup/business-details" element={<BusinessDetailsPage />} />
                 <Route index element={<DashboardPage />} />
                 <Route path="/bom" element={<BomPage />} />
                 <Route path="/scheduler" element={<SchedulerPage />} />
