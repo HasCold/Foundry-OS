@@ -1,15 +1,38 @@
+
 import { NavLink } from 'react-router-dom'
-import { BarChart3, Boxes, Factory, LayoutDashboard, Network, ShieldCheck, ShoppingCart, Landmark } from 'lucide-react'
+import {
+  BarChart3,
+  Boxes,
+  Factory,
+  LayoutDashboard,
+  Network,
+  ShieldCheck,
+  ShoppingCart,
+  Landmark,
+  Info,
+  Building2,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_SECTIONS = [
   {
+    label: 'Setup',
+    items: [
+      { to: '/setup/company-profile', label: 'Company Profile', icon: Info },
+      { to: '/setup/business-details', label: 'Business Details', icon: Building2 },
+    ],
+  },
+  {
     label: 'Overview',
-    items: [{ to: '/', label: 'Executive Dashboard', icon: LayoutDashboard, end: true }],
+    items: [
+      { to: '/', label: 'Executive Dashboard', icon: LayoutDashboard, end: true },
+    ],
   },
   {
     label: 'Engineering',
-    items: [{ to: '/bom', label: 'BOM & Costing Engine', icon: Network }],
+    items: [
+      { to: '/bom', label: 'BOM & Costing Engine', icon: Network },
+    ],
   },
   {
     label: 'Operations',
@@ -42,14 +65,21 @@ export function Sidebar() {
           <Factory className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-[15px] font-bold leading-tight tracking-tight text-foreground">FoundryOS</p>
-          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground">Manufacturing Platform</p>
+          <p className="text-[15px] font-bold leading-tight tracking-tight text-foreground">
+            FoundryOS
+          </p>
+          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+            Manufacturing Platform
+          </p>
         </div>
       </div>
+
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4 scrollbar-thin">
         {NAV_SECTIONS.map((section) => (
           <div key={section.label}>
-            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{section.label}</p>
+            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {section.label}
+            </p>
             <div className="space-y-0.5">
               {section.items.map((item) => (
                 <NavLink
@@ -59,7 +89,9 @@ export function Sidebar() {
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-                      isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )
                   }
                 >
@@ -71,10 +103,13 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
+
       <div className="border-t border-border p-3">
         <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">In-memory demo mode</p>
-          <p className="mt-0.5">All data is simulated client-side. Refreshing resets the session.</p>
+          <p className="mt-0.5">
+            All data is simulated client-side. Refreshing resets the session.
+          </p>
         </div>
       </div>
     </aside>
