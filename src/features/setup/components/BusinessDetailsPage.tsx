@@ -6,6 +6,7 @@ import { useEditableForm } from '../hooks/useEditableForm'
 import type { BusinessDetails, SetupFieldDef } from '../types'
 import { SetupFieldGrid } from './SetupFieldGrid'
 import { EditActions } from './EditActions'
+import { Can } from '@/features/rbac/components/Can'
 
 const BUSINESS_FIELDS: SetupFieldDef<BusinessDetails>[] = [
   { key: 'legalBusinessName', label: 'Legal Business Name' },
@@ -42,14 +43,16 @@ export function BusinessDetailsPage() {
         title="Business Details"
         description="View your organization's business, registration and contact details."
         actions={
-          <EditActions
-            isEditing={form.isEditing}
-            isDirty={form.isDirty}
-            isSaving={isSavingBusinessDetails}
-            onEdit={form.startEditing}
-            onCancel={form.cancelEditing}
-            onSave={() => updateBusinessDetails(form.values, form.cancelEditing)}
-          />
+          <Can resource="setup.businessDetails" action="write">
+            <EditActions
+              isEditing={form.isEditing}
+              isDirty={form.isDirty}
+              isSaving={isSavingBusinessDetails}
+              onEdit={form.startEditing}
+              onCancel={form.cancelEditing}
+              onSave={() => updateBusinessDetails(form.values, form.cancelEditing)}
+            />
+          </Can>
         }
       />
 

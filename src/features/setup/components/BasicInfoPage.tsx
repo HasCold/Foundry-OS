@@ -7,6 +7,7 @@ import { useEditableForm } from '../hooks/useEditableForm'
 import { BASE_CURRENCIES, type CompanyProfile, type SetupFieldDef } from '../types'
 import { SetupFieldGrid } from './SetupFieldGrid'
 import { EditActions } from './EditActions'
+import { Can } from '@/features/rbac/components/Can'
 
 const PROFILE_FIELDS: SetupFieldDef<CompanyProfile>[] = [
   { key: 'companyName', label: 'Company Name' },
@@ -30,14 +31,16 @@ export function BasicInfoPage() {
         title="Company Profile"
         description="Manage the basic configuration and general information of your organization."
         actions={
-          <EditActions
-            isEditing={form.isEditing}
-            isDirty={form.isDirty && isFiscalYearValid}
-            isSaving={isSavingProfile}
-            onEdit={form.startEditing}
-            onCancel={form.cancelEditing}
-            onSave={() => updateCompanyProfile(form.values, form.cancelEditing)}
-          />
+          <Can resource="setup.companyProfile" action="write">
+            <EditActions
+              isEditing={form.isEditing}
+              isDirty={form.isDirty && isFiscalYearValid}
+              isSaving={isSavingProfile}
+              onEdit={form.startEditing}
+              onCancel={form.cancelEditing}
+              onSave={() => updateCompanyProfile(form.values, form.cancelEditing)}
+            />
+          </Can>
         }
       />
 

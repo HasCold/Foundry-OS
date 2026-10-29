@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { Can } from '@/features/rbac/components/Can'
 
 const STATUS_FLOW: ProductionOrderStatus[] = ['planned', 'in_progress', 'quality_hold', 'completed']
 const STATUS_LABEL: Record<ProductionOrderStatus, string> = {
@@ -70,25 +71,27 @@ export function OrderDetailDialog({
           </div>
         )}
 
-        <Separator />
+        <Can resource="scheduler" action="write">
+          <Separator />
 
-        <div>
-          <p className="mb-2 text-xs font-medium text-muted-foreground">Move to phase</p>
-          <div className="flex flex-wrap gap-1.5">
-            {STATUS_FLOW.map((status) => (
-              <Button
-                key={status}
-                size="sm"
-                variant={order.status === status ? 'default' : 'outline'}
-                disabled={order.status === status || order.isFrozen}
-                title={order.isFrozen ? 'This order is frozen while its machine is down' : undefined}
-                onClick={() => onSetStatus(order.id, status)}
-              >
-                {STATUS_LABEL[status]}
-              </Button>
-            ))}
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Move to phase</p>
+            <div className="flex flex-wrap gap-1.5">
+              {STATUS_FLOW.map((status) => (
+                <Button
+                  key={status}
+                  size="sm"
+                  variant={order.status === status ? 'default' : 'outline'}
+                  disabled={order.status === status || order.isFrozen}
+                  title={order.isFrozen ? 'This order is frozen while its machine is down' : undefined}
+                  onClick={() => onSetStatus(order.id, status)}
+                >
+                  {STATUS_LABEL[status]}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        </Can>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

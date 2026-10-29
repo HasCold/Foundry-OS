@@ -29,10 +29,16 @@ npm run build     # type-check + production build
 npm run preview   # serve the production build locally
 ```
 
-On first load you'll land on the sign-in screen. Use the seeded demo account —
-organization **Northbridge Fabrication**, email **admin@foundryos.dev**, password
-**foundry123** — or sign up as a new organization (any 4 or 6 digit code verifies
-the account).
+On first load you'll land on the sign-in screen. Both seeded accounts belong to
+organization **Northbridge Fabrication** with password **foundry123**:
+
+| Email | Access |
+|---|---|
+| **admin@foundryos.dev** | Super user — everything, including Utilities (users, groups, roles) |
+| **finance@foundryos.dev** | Member of the *Finance* group — finance view-only |
+
+Or sign up as a new organization (any 4 or 6 digit code verifies the account) —
+whoever creates an organization becomes its super user.
 
 ## Architecture
 
@@ -59,6 +65,8 @@ src/
     procurement/         Purchase order lifecycle, MRP → PO conversion
     analytics/           OEE / yield / scrap / financial variance reporting
     finance/             General ledger, financial statements, AP/AR, cost variance
+    rbac/                Roles, groups, user administration and permission enforcement
+    setup/               Company profile and business details
     dashboard/           Executive overview landing page
 ```
 
@@ -139,6 +147,38 @@ happens, `on()` it in `domainIntegrations.ts`.
   cash and the GL together; and Recharts small-multiples visualizing Standard
   vs. Actual overruns for material waste, scrap loss, and labor overtime.
 
+## Access control (RBAC)
+
+`src/features/rbac` implements **Users → Groups → Roles → Permissions**, with
+roles also assignable straight to a user. A permission is one action on one
+screen (`finance:view`, `procurement:approve`); a user's effective access is the
+union of everything reachable through their groups and direct roles.
+
+Each screen has up to three actions: **View** (open and read), **Write** (add,
+edit and delete together — not every screen supports all three) and
+**Approve** (sign-offs: approving a PO, a QA disposition, paying a supplier).
+
+- **Permission catalog** — `PERMISSION_CATALOG` in `rbac/types` lists every
+  securable screen and which actions it supports. The role editor's matrix and
+  the `ResourceKey` type are derived from it, so securing a new module starts
+  with one entry there.
+- **Super user** — the organization's owner (`RegisteredUser.isSuperUser`)
+  implicitly holds every permission and is the only person who can open
+  *Utilities* to manage users, groups and roles. Access management is
+  deliberately not a grantable permission, and the super user's own access
+  can't be changed or deactivated.
+- **Enforcement, three layers** — `RequirePermission` gates each route (and the
+  sidebar hides the same links), `<Can>` / `usePermissions().can()` gate
+  buttons inside a page, and `authorize()` runs inside each feature's `api/`
+  function, where a real backend would return a 403. Hiding UI alone isn't
+  security; the api-layer check is what a backend later takes over.
+- **Guard rails** live in the RBAC store, not the screens: unique role/group
+  names, a role or group still in use can't be deleted, deactivated users
+  can't sign in, and granting `write` or `approve` always implies `view`.
+- **Errors** — a rejected mutation (including a permission failure) is toasted
+  once, by the `MutationCache` handler in `App.tsx`, so feature hooks don't
+  each need their own `onError`.
+
 ## Notes
 
 - All data is seeded from `src/mock/*` and lives only in memory — there is
@@ -150,5 +190,3 @@ happens, `on()` it in `domainIntegrations.ts`.
 - Authentication is a UI/state simulation only — passwords are kept in plain
   in-memory objects. This is explicitly not production auth practice; there is
   no backend for it to talk to.
-- RBAC is intentionally omitted — the app operates as a single admin user per
-  signed-in organization.
