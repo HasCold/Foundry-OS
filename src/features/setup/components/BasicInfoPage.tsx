@@ -1,6 +1,7 @@
 import { Info } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { INDUSTRY_TYPES } from '@/features/auth/types'
 import { useSetup } from '../hooks/useSetup'
 import { useEditableForm } from '../hooks/useEditableForm'
 import { BASE_CURRENCIES, type CompanyProfile, type SetupFieldDef } from '../types'
@@ -10,15 +11,18 @@ import { EditActions } from './EditActions'
 const PROFILE_FIELDS: SetupFieldDef<CompanyProfile>[] = [
   { key: 'companyName', label: 'Company Name' },
   { key: 'companyCode', label: 'Company Code' },
-  { key: 'industry', label: 'Industry' },
-  { key: 'fiscalYear', label: 'Fiscal Year' },
-  { key: 'baseCurrency', label: 'Base Currency', options: BASE_CURRENCIES.map((c) => ({ value: c.code, label: c.label })) },
+  { kind: 'select', key: 'industry', label: 'Industry', options: INDUSTRY_TYPES.map((type) => ({ value: type, label: type })) },
+  { kind: 'dateRange', key: 'fiscalYearStart', endKey: 'fiscalYearEnd', label: 'Fiscal Year' },
+  { kind: 'select', key: 'baseCurrency', label: 'Base Currency', options: BASE_CURRENCIES.map((c) => ({ value: c.code, label: c.label })) },
   { key: 'timeZone', label: 'Time Zone' },
 ]
 
 export function BasicInfoPage() {
   const { companyProfile, updateCompanyProfile, isSavingProfile } = useSetup()
   const form = useEditableForm(companyProfile)
+  // ISO yyyy-MM-dd strings compare correctly as plain strings.
+  const { fiscalYearStart, fiscalYearEnd } = form.values
+  const isFiscalYearValid = Boolean(fiscalYearStart && fiscalYearEnd) && fiscalYearStart < fiscalYearEnd
 
   return (
     <div className="flex flex-col gap-5">
@@ -28,7 +32,7 @@ export function BasicInfoPage() {
         actions={
           <EditActions
             isEditing={form.isEditing}
-            isDirty={form.isDirty}
+            isDirty={form.isDirty && isFiscalYearValid}
             isSaving={isSavingProfile}
             onEdit={form.startEditing}
             onCancel={form.cancelEditing}
