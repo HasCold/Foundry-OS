@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   ShoppingCart,
   Landmark,
-  Settings2,
   Info,
   Building2,
 } from 'lucide-react'
@@ -19,7 +18,7 @@ const NAV_SECTIONS = [
   {
     label: 'Setup',
     items: [
-      { to: '/setup/basic-info', label: 'Basic Info', icon: Info },
+      { to: '/setup/company-profile', label: 'Company Profile', icon: Info },
       { to: '/setup/business-details', label: 'Business Details', icon: Building2 },
     ],
   },

@@ -43,7 +43,7 @@ export default function App() {
             {/* Everything else requires an authenticated in-memory session. */}
             <Route element={<RequireAuth />}>
               <Route element={<AppLayout />}>
-                <Route path="/setup/basic-info" element={<BasicInfoPage />} />
+                <Route path="/setup/company-profile" element={<BasicInfoPage />} />
                 <Route path="/setup/business-details" element={<BusinessDetailsPage />} />
                 <Route index element={<DashboardPage />} />
                 <Route path="/bom" element={<BomPage />} />

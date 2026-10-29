@@ -1,96 +1,92 @@
-
 import { Building2, MapPin } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { useSetup } from '../hooks/useSetup'
+import { useEditableForm } from '../hooks/useEditableForm'
+import type { BusinessDetails, SetupFieldDef } from '../types'
+import { SetupFieldGrid } from './SetupFieldGrid'
+import { EditActions } from './EditActions'
 
-const businessInfo = [
-    { label: 'Legal Business Name', value: 'FoundryOS Manufacturing (Demo)' },
-    { label: 'Business Type', value: 'Private Limited Company (Demo)' },
-    { label: 'Registration Number', value: 'DEMO-REG-001' },
-    { label: 'Tax Identification Number', value: 'DEMO-TAX-001' },
-    { label: 'Business Email', value: 'info@example.com' },
-    { label: 'Contact Number', value: '+92 300 0000000' },
-    { label: 'Website', value: 'https://example.com' },
+const BUSINESS_FIELDS: SetupFieldDef<BusinessDetails>[] = [
+  { key: 'legalBusinessName', label: 'Legal Business Name' },
+  { key: 'businessType', label: 'Business Type' },
+  { key: 'registrationNumber', label: 'Registration Number' },
+  { key: 'taxIdentificationNumber', label: 'Tax Identification Number' },
+  { key: 'businessEmail', label: 'Business Email' },
+  { key: 'contactNumber', label: 'Contact Number' },
+  { key: 'website', label: 'Website' },
 ]
 
-const addressInfo = [
-    { label: 'Address Line', value: '123 Industrial Area (Demo)' },
-    { label: 'City', value: 'Lahore' },
-    { label: 'State / Province', value: 'Punjab' },
-    { label: 'Country', value: 'Pakistan' },
-    { label: 'Postal Code', value: '54000' },
+const ADDRESS_FIELDS: SetupFieldDef<BusinessDetails>[] = [
+  { key: 'addressLine', label: 'Address Line' },
+  { key: 'city', label: 'City' },
+  { key: 'stateProvince', label: 'State / Province' },
+  { key: 'country', label: 'Country' },
+  { key: 'postalCode', label: 'Postal Code' },
 ]
-
-function DetailFields({ fields }: {
-    fields: { label: string; value: string }[]
-}) {
-    return (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {fields.map((field) => (
-                <div key={field.label} className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                        {field.label}
-                    </label>
-                    <Input value={field.value} readOnly />
-                </div>
-            ))}
-        </div>
-    )
-}
 
 export function BusinessDetailsPage() {
-    return (
-        <div className="flex flex-col gap-5">
-            <PageHeader
-                title="Business Details"
-                description="View your organization's business, registration and contact details."
-                actions={<Badge variant="secondary">Demo Data</Badge>}
-            />
+  const { businessDetails, updateBusinessDetails, isSavingBusinessDetails } = useSetup()
+  const form = useEditableForm(businessDetails)
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <Building2 className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <CardTitle>Business Information</CardTitle>
-                            <CardDescription className="mt-1">
-                                Company registration and contact information.
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
+  const fieldGridProps = {
+    values: form.values,
+    isEditing: form.isEditing,
+    onChange: (key: keyof BusinessDetails, value: string) => form.setField(key, value),
+  }
 
-                <CardContent>
-                    <DetailFields fields={businessInfo} />
-                </CardContent>
-            </Card>
+  return (
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title="Business Details"
+        description="View your organization's business, registration and contact details."
+        actions={
+          <EditActions
+            isEditing={form.isEditing}
+            isDirty={form.isDirty}
+            isSaving={isSavingBusinessDetails}
+            onEdit={form.startEditing}
+            onCancel={form.cancelEditing}
+            onSave={() => updateBusinessDetails(form.values, form.cancelEditing)}
+          />
+        }
+      />
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <MapPin className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <CardTitle>Business Address</CardTitle>
-                            <CardDescription className="mt-1">
-                                Registered business location and mailing address.
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle>Business Information</CardTitle>
+              <CardDescription className="mt-1">Company registration and contact information.</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
 
-                <CardContent>
-                    <DetailFields fields={addressInfo} />
-                    <p className="mt-5 rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
-                        All information on this page is fictional sample data for UI development.
-                    </p>
-                </CardContent>
-            </Card>
-        </div>
-    )
+        <CardContent>
+          <SetupFieldGrid fields={BUSINESS_FIELDS} {...fieldGridProps} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle>Business Address</CardTitle>
+              <CardDescription className="mt-1">Registered business location and mailing address.</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <SetupFieldGrid fields={ADDRESS_FIELDS} {...fieldGridProps} />
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
