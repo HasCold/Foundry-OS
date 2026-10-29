@@ -7,6 +7,7 @@ import { ExportCsvButton } from '@/components/shared/export-csv-button'
 import { formatDate } from '@/lib/utils'
 import { useCurrency } from '@/features/finance/hooks/useCurrency'
 import { PackageCheck } from 'lucide-react'
+import { usePermissions } from '@/features/rbac/hooks/usePermissions'
 
 const STATUS_VARIANT: Record<PurchaseOrderStatus, 'muted' | 'warning' | 'default' | 'success' | 'destructive'> = {
   suggested: 'muted',
@@ -37,6 +38,7 @@ interface PurchaseOrdersTableProps {
 
 export function PurchaseOrdersTable({ purchaseOrders, onAdvance, onReceive }: PurchaseOrdersTableProps) {
   const { formatMoney } = useCurrency()
+  const { can } = usePermissions()
   const columns: DataTableColumn<PurchaseOrder>[] = [
     {
       id: 'po',
@@ -92,10 +94,12 @@ export function PurchaseOrdersTable({ purchaseOrders, onAdvance, onReceive }: Pu
       header: '',
       accessor: (r) => {
         const advance = NEXT_STATUS[r.status]
-        const canReceive = RECEIVABLE_STATUSES.includes(r.status)
+        // Approving a draft is a sign-off; marking it in transit or receiving goods is data entry.
+        const canAdvance = advance && can('procurement', advance.next === 'approved' ? 'approve' : 'write')
+        const canReceive = RECEIVABLE_STATUSES.includes(r.status) && can('procurement', 'write')
         return (
           <div className="flex justify-end gap-1.5">
-            {advance && (
+            {canAdvance && (
               <Button size="xs" variant="outline" onClick={() => onAdvance(r.id, advance.next)}>
                 {advance.label}
               </Button>

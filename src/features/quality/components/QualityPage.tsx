@@ -11,6 +11,7 @@ import { formatDateTime } from '@/lib/utils'
 import { useQuality } from '../hooks/useQuality'
 import { LogDefectDialog } from './LogDefectDialog'
 import { ResolveHoldDialog } from './ResolveHoldDialog'
+import { Can } from '@/features/rbac/components/Can'
 
 const SEVERITY_VARIANT = { minor: 'muted', major: 'warning', critical: 'destructive' } as const
 
@@ -87,15 +88,19 @@ export function QualityPage() {
                 <Separator />
 
                 <div className="flex flex-wrap gap-1.5">
-                  <Button size="sm" variant="outline" onClick={() => setDefectHold(hold)} className="gap-1">
-                    <ClipboardList className="h-3.5 w-3.5" /> Log defect
-                  </Button>
-                  <Button size="sm" variant="success" onClick={() => setResolveTarget({ hold, decision: 'approved' })} className="gap-1">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Approve
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => setResolveTarget({ hold, decision: 'rejected' })} className="gap-1">
-                    <XCircle className="h-3.5 w-3.5" /> Reject
-                  </Button>
+                  <Can resource="quality" action="write">
+                    <Button size="sm" variant="outline" onClick={() => setDefectHold(hold)} className="gap-1">
+                      <ClipboardList className="h-3.5 w-3.5" /> Log defect
+                    </Button>
+                  </Can>
+                  <Can resource="quality" action="approve">
+                    <Button size="sm" variant="success" onClick={() => setResolveTarget({ hold, decision: 'approved' })} className="gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Approve
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => setResolveTarget({ hold, decision: 'rejected' })} className="gap-1">
+                      <XCircle className="h-3.5 w-3.5" /> Reject
+                    </Button>
+                  </Can>
                 </div>
               </CardContent>
             </Card>

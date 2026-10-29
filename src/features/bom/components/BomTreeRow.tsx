@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Can } from '@/features/rbac/components/Can'
 
 const TYPE_ICON: Record<BomNode['type'], typeof Box> = {
   finished_good: Box,
@@ -94,27 +95,29 @@ export function BomTreeRow({ node, depth, rollups, onEdit, onAddChild, onDelete,
             {rollup ? formatPercent(rollup.variancePct) : '—'}
           </TooltipContent>
         </Tooltip>
-        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-          {canHaveChildren && (
-            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onAddChild(node)} title="Add component">
-              <Plus className="h-3.5 w-3.5" />
+        <Can resource="bom" action="write">
+          <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+            {canHaveChildren && (
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onAddChild(node)} title="Add component">
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onEdit(node)} title="Edit">
+              <Pencil className="h-3.5 w-3.5" />
             </Button>
-          )}
-          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onEdit(node)} title="Edit">
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          {!isRoot && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 text-destructive hover:text-destructive"
-              onClick={() => onDelete(node)}
-              title="Delete"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
+            {!isRoot && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 text-destructive hover:text-destructive"
+                onClick={() => onDelete(node)}
+                title="Delete"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        </Can>
       </div>
       {expanded &&
         node.children?.map((child) => (

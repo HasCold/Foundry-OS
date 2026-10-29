@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate, formatNumber } from '@/lib/utils'
 import { useProcurement } from '@/features/procurement/hooks/useProcurement'
 import { useCurrency } from '@/features/finance/hooks/useCurrency'
+import { Can } from '@/features/rbac/components/Can'
 
 export function MrpPanel({ lastRun, onRun, isRunning }: { lastRun: MrpRunResult | null; onRun: () => void; isRunning: boolean }) {
   const { approveSuggested } = useProcurement()
@@ -23,10 +24,12 @@ export function MrpPanel({ lastRun, onRun, isRunning }: { lastRun: MrpRunResult 
             Explodes every open production order's BOM against current stock and flags net shortfalls.
           </CardDescription>
         </div>
-        <Button onClick={onRun} disabled={isRunning} className="gap-1.5">
-          <PlayCircle className="h-4 w-4" />
-          {isRunning ? 'Running simulation…' : 'Run MRP Simulation'}
-        </Button>
+        <Can resource="inventory" action="write">
+          <Button onClick={onRun} disabled={isRunning} className="gap-1.5">
+            <PlayCircle className="h-4 w-4" />
+            {isRunning ? 'Running simulation…' : 'Run MRP Simulation'}
+          </Button>
+        </Can>
       </CardHeader>
       <CardContent>
         {!lastRun && <p className="py-6 text-center text-sm text-muted-foreground">Run the simulation to evaluate material availability against open production orders.</p>}
@@ -102,9 +105,11 @@ export function MrpPanel({ lastRun, onRun, isRunning }: { lastRun: MrpRunResult 
                         </p>
                         <p className="text-xs text-muted-foreground">Est. value {formatMoney(po.totalValue)} · needed by {formatDate(po.expectedDate)}</p>
                       </div>
-                      <Button size="sm" onClick={() => approveSuggested(po)}>
-                        Approve &amp; Convert to PO
-                      </Button>
+                      <Can resource="procurement" action="approve">
+                        <Button size="sm" onClick={() => approveSuggested(po)}>
+                          Approve &amp; Convert to PO
+                        </Button>
+                      </Can>
                     </div>
                   ))}
                 </div>

@@ -85,7 +85,10 @@ export function Topbar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel>Signed in as {displayName}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              Signed in as {displayName}
+              {currentUser?.isSuperUser && <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Super User · full access</span>}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4" />
