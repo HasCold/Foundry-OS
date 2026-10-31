@@ -110,8 +110,16 @@ export interface Group {
   roleIds: string[]
 }
 
-/** What a single user has been given. Effective access = these roles + every role of these groups. */
+/**
+ * What a single user has been given: where they work, and what they can do.
+ * Effective access = these roles + every role of these groups. The
+ * organization and location record where the user is based; they don't
+ * (yet) narrow which organization's data the user can see.
+ */
 export interface UserAssignment {
+  /** `null` only for the super user, who spans every organization. */
+  organizationId: string | null
+  locationId: string | null
   groupIds: string[]
   roleIds: string[]
 }

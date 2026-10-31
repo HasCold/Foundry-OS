@@ -3,10 +3,11 @@ import { useState } from 'react'
 /**
  * Local view/edit state for a setup form. Holds a draft copy of the saved
  * values while editing, so Cancel can throw changes away without ever
- * touching the store.
+ * touching the store. `startInEditMode` is for create forms, which have no
+ * read-only state to fall back to.
  */
-export function useEditableForm<T extends object>(saved: T) {
-  const [draft, setDraft] = useState<T | null>(null)
+export function useEditableForm<T extends object>(saved: T, { startInEditMode = false } = {}) {
+  const [draft, setDraft] = useState<T | null>(() => (startInEditMode ? { ...saved } : null))
 
   const isEditing = draft !== null
   const values = draft ?? saved

@@ -43,5 +43,5 @@ export const groups: Group[] = [
 
 /** userId -> assignments for the seeded accounts in `authStore`. The super user needs none. */
 export const assignments: Record<string, UserAssignment> = {
-  'user-seed-2': { groupIds: ['grp-finance'], roleIds: [] },
+  'user-seed-2': { organizationId: 'org-1', locationId: 'loc-1', groupIds: ['grp-finance'], roleIds: [] },
 }

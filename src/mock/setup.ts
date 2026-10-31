@@ -1,14 +1,27 @@
-import type { BusinessDetails, CompanyProfile } from '@/features/setup/types'
+import type { BusinessDetails, Organization, OrganizationLocation } from '@/features/setup/types'
 
-export const companyProfile: CompanyProfile = {
-  companyName: 'FoundryOS Manufacturing',
-  companyCode: 'FOS-001',
-  industry: 'Discrete Manufacturing',
-  fiscalYearStart: '2026-01-01',
-  fiscalYearEnd: '2026-12-31',
-  baseCurrency: 'USD',
-  timeZone: 'Asia/Karachi (PKT)',
-}
+export const organizations: Organization[] = [
+  {
+    id: 'org-1',
+    name: 'FoundryOS Manufacturing',
+    code: 'FOS-001',
+    industry: 'Discrete Manufacturing',
+    fiscalYearStart: '2026-01-01',
+    fiscalYearEnd: '2026-12-31',
+    baseCurrency: 'USD',
+    timeZone: 'Asia/Karachi (PKT)',
+  },
+  {
+    id: 'org-2',
+    name: 'FoundryOS Packaging',
+    code: 'FOS-002',
+    industry: 'Consumer Packaged Goods',
+    fiscalYearStart: '2026-07-01',
+    fiscalYearEnd: '2027-06-30',
+    baseCurrency: 'PKR',
+    timeZone: 'Asia/Karachi (PKT)',
+  },
+]
 
 export const businessDetails: BusinessDetails = {
   legalBusinessName: 'FoundryOS Manufacturing (Demo)',
@@ -19,9 +32,59 @@ export const businessDetails: BusinessDetails = {
   businessEmail: 'info@example.com',
   contactNumber: '+92 300 0000000',
   website: 'https://example.com',
-  addressLine: '123 Industrial Area (Demo)',
-  city: 'Lahore',
-  stateProvince: 'Punjab',
-  country: 'Pakistan',
-  postalCode: '54000',
 }
+
+export const locations: OrganizationLocation[] = [
+  {
+    id: 'loc-1',
+    organizationId: 'org-1',
+    name: 'Lahore Head Office',
+    type: 'Head Office',
+    addressLine: '123 Industrial Area (Demo)',
+    city: 'Lahore',
+    stateProvince: 'Punjab',
+    country: 'Pakistan',
+    postalCode: '54000',
+    contactNumber: '+92 300 0000000',
+    isPrimary: true,
+  },
+  {
+    id: 'loc-2',
+    organizationId: 'org-1',
+    name: 'Sundar Plant 1',
+    type: 'Manufacturing Plant',
+    addressLine: 'Plot 45, Sundar Industrial Estate (Demo)',
+    city: 'Lahore',
+    stateProvince: 'Punjab',
+    country: 'Pakistan',
+    postalCode: '55050',
+    contactNumber: '+92 300 0000001',
+    isPrimary: false,
+  },
+  {
+    id: 'loc-3',
+    organizationId: 'org-1',
+    name: 'Karachi Warehouse',
+    type: 'Warehouse',
+    addressLine: 'Port Qasim Logistics Park (Demo)',
+    city: 'Karachi',
+    stateProvince: 'Sindh',
+    country: 'Pakistan',
+    postalCode: '75020',
+    contactNumber: '+92 300 0000002',
+    isPrimary: false,
+  },
+  {
+    id: 'loc-4',
+    organizationId: 'org-2',
+    name: 'Kot Lakhpat Packaging Unit',
+    type: 'Manufacturing Plant',
+    addressLine: 'Kot Lakhpat Industrial Area (Demo)',
+    city: 'Lahore',
+    stateProvince: 'Punjab',
+    country: 'Pakistan',
+    postalCode: '54770',
+    contactNumber: '+92 300 0000003',
+    isPrimary: true,
+  },
+]

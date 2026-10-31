@@ -1,71 +1,89 @@
-import { Info } from 'lucide-react'
+import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { INDUSTRY_TYPES } from '@/features/auth/types'
-import { useSetup } from '../hooks/useSetup'
-import { useEditableForm } from '../hooks/useEditableForm'
-import { BASE_CURRENCIES, type CompanyProfile, type SetupFieldDef } from '../types'
-import { SetupFieldGrid } from './SetupFieldGrid'
-import { EditActions } from './EditActions'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Can } from '@/features/rbac/components/Can'
+import { useSetup } from '../hooks/useSetup'
+import { OrganizationCard } from './OrganizationCard'
+import { LocationsCard } from './LocationsCard'
 
-const PROFILE_FIELDS: SetupFieldDef<CompanyProfile>[] = [
-  { key: 'companyName', label: 'Company Name' },
-  { key: 'companyCode', label: 'Company Code' },
-  { kind: 'select', key: 'industry', label: 'Industry', options: INDUSTRY_TYPES.map((type) => ({ value: type, label: type })) },
-  { kind: 'dateRange', key: 'fiscalYearStart', endKey: 'fiscalYearEnd', label: 'Fiscal Year' },
-  { kind: 'select', key: 'baseCurrency', label: 'Base Currency', options: BASE_CURRENCIES.map((c) => ({ value: c.code, label: c.label })) },
-  { key: 'timeZone', label: 'Time Zone' },
-]
+/** Tab value for the not-yet-saved organization being created. */
+const NEW_TAB = 'new'
 
+/**
+ * Company Profile: one tab per organization (business) the company runs,
+ * each with its own profile and locations, plus "Add organization" to set
+ * up another one under the same account.
+ */
 export function BasicInfoPage() {
-  const { companyProfile, updateCompanyProfile, isSavingProfile } = useSetup()
-  const form = useEditableForm(companyProfile)
-  // ISO yyyy-MM-dd strings compare correctly as plain strings.
-  const { fiscalYearStart, fiscalYearEnd } = form.values
-  const isFiscalYearValid = Boolean(fiscalYearStart && fiscalYearEnd) && fiscalYearStart < fiscalYearEnd
+  const { organizations } = useSetup()
+  const [selected, setSelected] = useState<string>(organizations[0]?.id ?? NEW_TAB)
+  const [isCreating, setIsCreating] = useState(false)
+
+  // Fall back to the first organization if the selected one was just removed.
+  const isSelectionValid = (selected === NEW_TAB && isCreating) || organizations.some((o) => o.id === selected)
+  const activeTab = isSelectionValid ? selected : organizations[0]?.id
+
+  const startCreating = () => {
+    setIsCreating(true)
+    setSelected(NEW_TAB)
+  }
+  const stopCreating = (nextTab: string | undefined) => {
+    setIsCreating(false)
+    setSelected(nextTab ?? organizations[0]?.id ?? NEW_TAB)
+  }
 
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Company Profile"
-        description="Manage the basic configuration and general information of your organization."
+        description="Every business your company runs from this account, each with its own settings and locations."
         actions={
           <Can resource="setup.companyProfile" action="write">
-            <EditActions
-              isEditing={form.isEditing}
-              isDirty={form.isDirty && isFiscalYearValid}
-              isSaving={isSavingProfile}
-              onEdit={form.startEditing}
-              onCancel={form.cancelEditing}
-              onSave={() => updateCompanyProfile(form.values, form.cancelEditing)}
-            />
+            <Button size="sm" onClick={startCreating} disabled={isCreating}>
+              <Plus />
+              Add organization
+            </Button>
           </Can>
         }
       />
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Info className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle>Organization Information</CardTitle>
-              <CardDescription className="mt-1">General company settings and preferences.</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
+      <Tabs value={activeTab} onValueChange={setSelected}>
+        <TabsList className="h-auto flex-wrap justify-start">
+          {organizations.map((o) => (
+            <TabsTrigger key={o.id} value={o.id}>
+              {o.name}
+            </TabsTrigger>
+          ))}
+          {isCreating && <TabsTrigger value={NEW_TAB}>New organization</TabsTrigger>}
+        </TabsList>
 
-        <CardContent>
-          <SetupFieldGrid
-            fields={PROFILE_FIELDS}
-            values={form.values}
-            isEditing={form.isEditing}
-            onChange={(key, value) => form.setField(key, value as CompanyProfile[typeof key])}
-          />
-        </CardContent>
-      </Card>
+        {organizations.map((o) => (
+          <TabsContent key={o.id} value={o.id} className="flex flex-col gap-5">
+            <OrganizationCard
+              organization={o}
+              canRemove={organizations.length > 1}
+              onCreated={() => {}}
+              onCancelCreate={() => {}}
+              onRemoved={() => setSelected(organizations.find((other) => other.id !== o.id)?.id ?? NEW_TAB)}
+            />
+            <LocationsCard organizationId={o.id} />
+          </TabsContent>
+        ))}
+
+        {isCreating && (
+          <TabsContent value={NEW_TAB}>
+            <OrganizationCard
+              organization={null}
+              canRemove={false}
+              onCreated={(organizationId) => stopCreating(organizationId)}
+              onCancelCreate={() => stopCreating(undefined)}
+              onRemoved={() => {}}
+            />
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toPublicUser, useAuthStore } from '@/features/auth/store/authStore'
+import { useSetupStore } from '@/features/setup/store/setupStore'
 import type { UserStatus } from '@/features/auth/types'
 import type { CreateUserInput, GroupInput, RoleInput, UserAccount, UserAssignment } from '../types'
 import { assignmentOf, useRbacStore } from '../store/rbacStore'
@@ -18,6 +19,9 @@ export function useAccessControl() {
   const assignments = useRbacStore((s) => s.assignments)
   const registeredUsers = useAuthStore((s) => s.registeredUsers)
   const currentUser = useAuthStore((s) => s.currentUser)
+  // Read-only: users are placed in an organization and one of its locations, which Setup owns.
+  const organizations = useSetupStore((s) => s.organizations)
+  const locations = useSetupStore((s) => s.locations)
   const queryClient = useQueryClient()
 
   const users = useMemo<UserAccount[]>(
@@ -53,6 +57,8 @@ export function useAccessControl() {
     roles,
     groups,
     users,
+    organizations,
+    locations,
     /** How many groups / users reference a role — shown in the roles list and used to explain blocked deletes. */
     roleUsage: (roleId: string) => ({
       groups: groups.filter((g) => g.roleIds.includes(roleId)).length,

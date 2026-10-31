@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import type { Organization, OrganizationLocation } from '@/features/setup/types'
 import type { CreateUserInput, Group, Role, UserAccount, UserAssignment } from '../../types'
 import { resolvePermissions } from '../../utils/permissions'
 import { AssignmentChecklist } from '../AssignmentChecklist'
@@ -14,6 +16,8 @@ interface UserDialogProps {
   user: UserAccount | 'new' | null
   groups: Group[]
   roles: Role[]
+  organizations: Organization[]
+  locations: OrganizationLocation[]
   isSaving: boolean
   onClose: () => void
   onCreate: (input: CreateUserInput) => void
@@ -26,26 +30,36 @@ export function UserDialog({ user, ...props }: UserDialogProps) {
   return <UserForm key={user === 'new' ? 'new' : user.id} user={user} {...props} />
 }
 
-function UserForm({ user, groups, roles, isSaving, onClose, onCreate, onUpdateAccess }: Omit<UserDialogProps, 'user'> & { user: UserAccount | 'new' }) {
+function UserForm({ user, groups, roles, organizations, locations, isSaving, onClose, onCreate, onUpdateAccess }: Omit<UserDialogProps, 'user'> & { user: UserAccount | 'new' }) {
   const existing = user === 'new' ? null : user
   const [identity, setIdentity] = useState({ fullName: '', email: '', password: '' })
-  const [assignment, setAssignment] = useState<UserAssignment>({
-    groupIds: existing?.groupIds ?? [],
-    roleIds: existing?.roleIds ?? [],
+  const primaryLocationOf = (organizationId: string | null) =>
+    locations.find((l) => l.organizationId === organizationId && l.isPrimary)?.id ?? null
+  const [assignment, setAssignment] = useState<UserAssignment>(() => {
+    const organizationId = existing?.organizationId ?? organizations[0]?.id ?? null
+    return {
+      organizationId,
+      locationId: existing?.locationId ?? primaryLocationOf(organizationId),
+      groupIds: existing?.groupIds ?? [],
+      roleIds: existing?.roleIds ?? [],
+    }
   })
 
-  const canSubmit = existing ? true : identity.fullName.trim() && identity.email.trim() && identity.password
+  const orgLocations = locations.filter((l) => l.organizationId === assignment.organizationId)
+  const hasPlacement = Boolean(assignment.organizationId) && (orgLocations.length === 0 || Boolean(assignment.locationId))
+  const hasIdentity = existing || (identity.fullName.trim() && identity.email.trim() && identity.password)
+  const canSubmit = hasPlacement && hasIdentity
   const submit = () => (existing ? onUpdateAccess(assignment) : onCreate({ ...identity, ...assignment }))
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{existing ? `Manage access — ${existing.fullName}` : 'New user'}</DialogTitle>
+          <DialogTitle>{existing ? `Manage user — ${existing.fullName}` : 'New user'}</DialogTitle>
           <DialogDescription>
             {existing
               ? existing.email
-              : 'The user signs in with your organization name, this email and the temporary password.'}
+              : "The user signs in with your company's sign-in name, this email and the temporary password."}
           </DialogDescription>
         </DialogHeader>
 
@@ -72,6 +86,47 @@ function UserForm({ user, groups, roles, isSaving, onClose, onCreate, onUpdateAc
             </div>
           </div>
         )}
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="user-organization">Organization</Label>
+            <Select
+              value={assignment.organizationId ?? undefined}
+              // Moving to another organization drops the old location — default to the new one's primary site.
+              onValueChange={(organizationId) => setAssignment({ ...assignment, organizationId, locationId: primaryLocationOf(organizationId) })}
+            >
+              <SelectTrigger id="user-organization">
+                <SelectValue placeholder="Choose organization" />
+              </SelectTrigger>
+              <SelectContent>
+                {organizations.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="user-location">Location</Label>
+            <Select
+              value={assignment.locationId ?? undefined}
+              onValueChange={(locationId) => setAssignment({ ...assignment, locationId })}
+              disabled={orgLocations.length === 0}
+            >
+              <SelectTrigger id="user-location">
+                <SelectValue placeholder={orgLocations.length === 0 ? 'This organization has no locations yet' : 'Choose location'} />
+              </SelectTrigger>
+              <SelectContent>
+                {orgLocations.map((l) => (
+                  <SelectItem key={l.id} value={l.id}>
+                    {l.name} · {l.city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <AssignmentChecklist
@@ -104,7 +159,7 @@ function UserForm({ user, groups, roles, isSaving, onClose, onCreate, onUpdateAc
           </Button>
           <Button onClick={submit} disabled={isSaving || !canSubmit}>
             {isSaving && <Loader2 className="animate-spin" />}
-            {existing ? 'Save access' : 'Create user'}
+            {existing ? 'Save changes' : 'Create user'}
           </Button>
         </DialogFooter>
       </DialogContent>

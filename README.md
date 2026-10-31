@@ -66,7 +66,7 @@ src/
     analytics/           OEE / yield / scrap / financial variance reporting
     finance/             General ledger, financial statements, AP/AR, cost variance
     rbac/                Roles, groups, user administration and permission enforcement
-    setup/               Company profile and business details
+    setup/               Organizations, their locations, and company business details
     dashboard/           Executive overview landing page
 ```
 
@@ -146,6 +146,25 @@ happens, `on()` it in `domainIntegrations.ts`.
   Payable / Receivable boards with a one-click "Process Payment" that updates
   cash and the GL together; and Recharts small-multiples visualizing Standard
   vs. Actual overruns for material waste, scrap loss, and labor overtime.
+
+## Company setup: organizations and locations
+
+One company account can run several businesses without buying a second
+subscription: **Company → Organization → Location**.
+
+- **Company Profile** (`/setup/company-profile`) has a tab per organization,
+  each with its own profile (name, code, industry, fiscal year, base currency,
+  time zone) and its own locations (plants, warehouses, offices — exactly one
+  primary per organization). *Add organization* opens a new tab with the same
+  fields.
+- **Business Details** stays single — the company's legal registration and
+  contact info, shared by every organization.
+- Every user (except the super user, who spans all organizations) is placed in
+  one organization and one of its locations, chosen in User Administration.
+  An organization or location that users are still based at can't be removed.
+- Placement is informational for now: it doesn't yet narrow which
+  organization's data a user can see — the operational modules aren't
+  organization-scoped yet.
 
 ## Access control (RBAC)
 

@@ -1,5 +1,16 @@
 import type { IndustryType } from '@/features/auth/types'
 
+// ---------------------------------------------------------------------------
+// Company setup.
+//
+//   Company (the account that signed up) ──< Organization ──< Location
+//
+// One company can run several businesses from a single FoundryOS account.
+// Each business is an Organization with its own profile (code, currency,
+// fiscal year…) and its own sites. Business Details — legal registration
+// and contact info — stay at the company level and are shared by all of them.
+// ---------------------------------------------------------------------------
+
 export const BASE_CURRENCIES = [
   { code: 'USD', label: 'USD - US Dollar' },
   { code: 'PKR', label: 'PKR - Pakistani Rupee' },
@@ -12,14 +23,19 @@ export const BASE_CURRENCIES = [
 
 export type BaseCurrencyCode = (typeof BASE_CURRENCIES)[number]['code']
 
-export interface CompanyProfile {
-  companyName: string
-  companyCode: string
+/** The editable fields of an organization's profile. */
+export interface OrganizationProfile {
+  name: string
+  code: string
   industry: IndustryType
   fiscalYearStart: string
   fiscalYearEnd: string
   baseCurrency: BaseCurrencyCode
   timeZone: string
+}
+
+export interface Organization extends OrganizationProfile {
+  id: string
 }
 
 export interface BusinessDetails {
@@ -33,12 +49,27 @@ export interface BusinessDetails {
   businessEmail: string
   contactNumber: string
   website: string
+}
+
+export const LOCATION_TYPES = ['Head Office', 'Manufacturing Plant', 'Warehouse', 'Branch Office', 'Sales Office'] as const
+export type LocationType = (typeof LOCATION_TYPES)[number]
+
+/** One physical site an organization operates from. Each organization has exactly one primary location. */
+export interface OrganizationLocation {
+  id: string
+  organizationId: string
+  name: string
+  type: LocationType
   addressLine: string
   city: string
   stateProvince: string
   country: string
   postalCode: string
+  contactNumber: string
+  isPrimary: boolean
 }
+
+export type LocationInput = Omit<OrganizationLocation, 'id' | 'organizationId' | 'isPrimary'>
 
 /**
  * Describes one input on a setup form. Plain fields render as a text input,

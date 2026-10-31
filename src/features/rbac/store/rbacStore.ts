@@ -2,10 +2,11 @@ import { create } from 'zustand'
 import type { CreateUserInput, Group, GroupInput, Role, RoleInput, UserAssignment } from '../types'
 import { assignments as initialAssignments, groups as initialGroups, roles as initialRoles } from '@/mock/rbac'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useSetupStore } from '@/features/setup/store/setupStore'
 import type { UserStatus } from '@/features/auth/types'
 import { nextId } from '@/lib/utils'
 
-const NO_ASSIGNMENT: UserAssignment = { groupIds: [], roleIds: [] }
+const NO_ASSIGNMENT: UserAssignment = { organizationId: null, locationId: null, groupIds: [], roleIds: [] }
 
 interface RbacState {
   roles: Role[]
@@ -50,6 +51,15 @@ function assertNotSuperUser(userId: string) {
   const user = useAuthStore.getState().registeredUsers.find((u) => u.id === userId)
   if (!user) throw new Error('User not found.')
   if (user.isSuperUser) throw new Error(`${user.fullName} is the organization super user — their access can't be changed.`)
+}
+
+/** Every user belongs to an existing organization, and to one of that organization's locations if it has any. */
+function assertValidPlacement({ organizationId, locationId }: UserAssignment) {
+  const { organizations, locations } = useSetupStore.getState()
+  if (!organizationId || !organizations.some((o) => o.id === organizationId)) throw new Error('Choose the organization this user belongs to.')
+  const orgLocations = locations.filter((l) => l.organizationId === organizationId)
+  if (orgLocations.length > 0 && !orgLocations.some((l) => l.id === locationId)) throw new Error("Choose the user's location within that organization.")
+  if (orgLocations.length === 0 && locationId) throw new Error('That location does not belong to the chosen organization.')
 }
 
 function findOrThrow<T extends { id: string }>(items: T[], id: string, kind: string): T {
@@ -128,16 +138,19 @@ export const useRbacStore = create<RbacState>((set, get) => ({
     if (!input.fullName.trim()) throw new Error('Full name is required.')
     if (!/^\S+@\S+\.\S+$/.test(input.email.trim())) throw new Error('Enter a valid email address.')
     if (input.password.length < 8) throw new Error('Temporary password must be at least 8 characters.')
+    assertValidPlacement(input)
 
     // Direct call: creating the login is Auth's half of the same "add a user"
     // operation, not a cross-cutting reaction, so there's nothing to decouple.
     const user = useAuthStore.getState().registerUser(input)
-    set((state) => ({ assignments: { ...state.assignments, [user.id]: { groupIds: input.groupIds, roleIds: input.roleIds } } }))
+    const { organizationId, locationId, groupIds, roleIds } = input
+    set((state) => ({ assignments: { ...state.assignments, [user.id]: { organizationId, locationId, groupIds, roleIds } } }))
   },
 
   setUserAssignment: (userId, assignment) => {
     assertSuperUser()
     assertNotSuperUser(userId)
+    assertValidPlacement(assignment)
     set((state) => ({ assignments: { ...state.assignments, [userId]: assignment } }))
   },
 
@@ -147,6 +160,13 @@ export const useRbacStore = create<RbacState>((set, get) => ({
     useAuthStore.getState().setUserStatus(userId, status)
   },
 }))
+
+/** How many users are based in this organization or at this location — setup refuses to delete either while any are. */
+export function countUsersPlacedAt(target: { organizationId: string } | { locationId: string }): number {
+  return Object.values(useRbacStore.getState().assignments).filter((a) =>
+    'organizationId' in target ? a.organizationId === target.organizationId : a.locationId === target.locationId,
+  ).length
+}
 
 /** A user's assignment, or an empty one if they've never been given anything. */
 export const assignmentOf = (assignments: Record<string, UserAssignment>, userId: string) => assignments[userId] ?? NO_ASSIGNMENT
