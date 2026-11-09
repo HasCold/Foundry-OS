@@ -11,53 +11,84 @@ import {
   Landmark,
   Info,
   Building2,
+  Users,
+  UsersRound,
+  KeyRound,
+  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { ResourceKey } from '@/features/rbac/types'
+import { usePermissions } from '@/features/rbac/hooks/usePermissions'
 
-const NAV_SECTIONS = [
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+  end?: boolean
+  /** The user needs `view` on this resource to see the link. */
+  resource?: ResourceKey
+  /** Access management — visible to the organization super user only. */
+  superUserOnly?: boolean
+}
+
+const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
   {
     label: 'Setup',
     items: [
-      { to: '/setup/company-profile', label: 'Company Profile', icon: Info },
-      { to: '/setup/business-details', label: 'Business Details', icon: Building2 },
+      { to: '/setup/company-profile', label: 'Company Profile', icon: Info, resource: 'setup.companyProfile' },
+      { to: '/setup/business-details', label: 'Business Details', icon: Building2, resource: 'setup.businessDetails' },
     ],
   },
   {
     label: 'Overview',
     items: [
-      { to: '/', label: 'Executive Dashboard', icon: LayoutDashboard, end: true },
+      { to: '/', label: 'Executive Dashboard', icon: LayoutDashboard, end: true, resource: 'dashboard' },
+    ],
+  },
+  {
+    label: 'Utilities',
+    items: [
+      { to: '/utilities/users', label: 'User Administration', icon: Users, superUserOnly: true },
+      { to: '/utilities/groups', label: 'Groups', icon: UsersRound, superUserOnly: true },
+      { to: '/utilities/roles', label: 'Roles', icon: KeyRound, superUserOnly: true },
     ],
   },
   {
     label: 'Engineering',
     items: [
-      { to: '/bom', label: 'BOM & Costing Engine', icon: Network },
+      { to: '/bom', label: 'BOM & Costing Engine', icon: Network, resource: 'bom' },
     ],
   },
   {
     label: 'Operations',
     items: [
-      { to: '/scheduler', label: 'Production Scheduler', icon: Factory },
-      { to: '/inventory', label: 'Inventory & MRP', icon: Boxes },
+      { to: '/scheduler', label: 'Production Scheduler', icon: Factory, resource: 'scheduler' },
+      { to: '/inventory', label: 'Inventory & MRP', icon: Boxes, resource: 'inventory' },
     ],
   },
   {
     label: 'Quality & Sourcing',
     items: [
-      { to: '/quality', label: 'Quality Assurance', icon: ShieldCheck },
-      { to: '/procurement', label: 'Procurement', icon: ShoppingCart },
+      { to: '/quality', label: 'Quality Assurance', icon: ShieldCheck, resource: 'quality' },
+      { to: '/procurement', label: 'Procurement', icon: ShoppingCart, resource: 'procurement' },
     ],
   },
   {
     label: 'Insights',
     items: [
-      { to: '/analytics', label: 'BI Analytics', icon: BarChart3 },
-      { to: '/finance', label: 'Finance & Ledger', icon: Landmark },
+      { to: '/analytics', label: 'BI Analytics', icon: BarChart3, resource: 'analytics' },
+      { to: '/finance', label: 'Finance & Ledger', icon: Landmark, resource: 'finance' },
     ],
   },
 ]
 
 export function Sidebar() {
+  const { can, isSuperUser } = usePermissions()
+  const isVisible = (item: NavItem) => (item.superUserOnly ? isSuperUser : !item.resource || can(item.resource))
+  const sections = NAV_SECTIONS.map((section) => ({ ...section, items: section.items.filter(isVisible) })).filter(
+    (section) => section.items.length > 0,
+  )
+
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-border bg-card">
       <div className="flex items-center gap-2.5 border-b border-border px-4 py-4">
@@ -75,7 +106,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4 scrollbar-thin">
-        {NAV_SECTIONS.map((section) => (
+        {sections.map((section) => (
           <div key={section.label}>
             <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {section.label}
@@ -85,7 +116,7 @@ export function Sidebar() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={'end' in item ? item.end : false}
+                  end={item.end ?? false}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors',

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate, formatNumber } from '@/lib/utils'
 import { useCurrency } from '@/features/finance/hooks/useCurrency'
 import { ShoppingCart } from 'lucide-react'
+import { Can } from '@/features/rbac/components/Can'
 
 export function SuggestedPOList({ suggested, onApprove }: { suggested: PurchaseOrder[]; onApprove: (po: PurchaseOrder) => void }) {
   const { formatMoney } = useCurrency()
@@ -33,9 +34,11 @@ export function SuggestedPOList({ suggested, onApprove }: { suggested: PurchaseO
               Est. value {formatMoney(po.totalValue)} · needed by {formatDate(po.expectedDate)}
             </p>
           </div>
-          <Button size="sm" onClick={() => onApprove(po)}>
-            Approve &amp; Convert to PO
-          </Button>
+          <Can resource="procurement" action="approve">
+            <Button size="sm" onClick={() => onApprove(po)}>
+              Approve &amp; Convert to PO
+            </Button>
+          </Can>
         </div>
       ))}
     </div>

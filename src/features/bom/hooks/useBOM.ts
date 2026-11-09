@@ -27,7 +27,6 @@ export function useBOM() {
   const updateNodeMutation = useMutation({
     mutationFn: bomApi.updateNode,
     onSuccess: invalidate,
-    onError: () => toast({ title: 'Update failed', description: 'Could not save BOM change.', variant: 'destructive' }),
   })
 
   const addNodeMutation = useMutation({
@@ -36,7 +35,6 @@ export function useBOM() {
       invalidate()
       toast({ title: 'Component added', variant: 'success' })
     },
-    onError: () => toast({ title: 'Add failed', variant: 'destructive' }),
   })
 
   const removeNodeMutation = useMutation({
@@ -45,7 +43,6 @@ export function useBOM() {
       invalidate()
       toast({ title: 'Component removed', variant: 'default' })
     },
-    onError: () => toast({ title: 'Remove failed', variant: 'destructive' }),
   })
 
   return {

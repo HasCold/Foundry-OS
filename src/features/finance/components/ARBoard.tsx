@@ -9,6 +9,7 @@ import { NewSaleDialog } from './NewSaleDialog'
 import { ExportCsvButton } from '@/components/shared/export-csv-button'
 import { useCurrency } from '../hooks/useCurrency'
 import { Plus } from 'lucide-react'
+import { Can } from '@/features/rbac/components/Can'
 
 interface ARBoardProps {
   invoices: ArInvoice[]
@@ -42,10 +43,12 @@ export function ARBoard({ invoices, onProcessPayment, onRecordSale }: ARBoardPro
               status: i.status,
             }))}
           />
-          <Button size="sm" onClick={() => setSaleDialogOpen(true)}>
-            <Plus className="h-3.5 w-3.5" />
-            New Sale
-          </Button>
+          <Can resource="finance" action="write">
+            <Button size="sm" onClick={() => setSaleDialogOpen(true)}>
+              <Plus className="h-3.5 w-3.5" />
+              New Sale
+            </Button>
+          </Can>
         </div>
       </CardHeader>
       <CardContent>
@@ -71,9 +74,11 @@ export function ARBoard({ invoices, onProcessPayment, onRecordSale }: ARBoardPro
                   <Badge variant={invoice.status === 'paid' ? 'success' : 'warning'}>{invoice.status === 'paid' ? 'Paid' : 'Unpaid'}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" variant="outline" disabled={invoice.status === 'paid'} onClick={() => onProcessPayment(invoice.id)}>
-                    Process Payment
-                  </Button>
+                  <Can resource="finance" action="write">
+                    <Button size="sm" variant="outline" disabled={invoice.status === 'paid'} onClick={() => onProcessPayment(invoice.id)}>
+                      Process Payment
+                    </Button>
+                  </Can>
                 </TableCell>
               </TableRow>
             ))}

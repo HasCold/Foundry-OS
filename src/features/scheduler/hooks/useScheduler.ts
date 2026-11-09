@@ -21,7 +21,6 @@ export function useScheduler() {
       invalidate()
       toast({ title: `Order moved to ${vars.status.replace('_', ' ')}`, variant: 'success' })
     },
-    onError: () => toast({ title: 'Could not update order status', variant: 'destructive' }),
   })
 
   const downtimeMutation = useMutation({

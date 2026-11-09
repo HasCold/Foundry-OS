@@ -1,93 +1,44 @@
-import { Building2, MapPin } from 'lucide-react'
+import { useState } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSetup } from '../hooks/useSetup'
-import { useEditableForm } from '../hooks/useEditableForm'
-import type { BusinessDetails, SetupFieldDef } from '../types'
-import { SetupFieldGrid } from './SetupFieldGrid'
-import { EditActions } from './EditActions'
+import { BusinessDetailsCard } from './BusinessDetailsCard'
 
-const BUSINESS_FIELDS: SetupFieldDef<BusinessDetails>[] = [
-  { key: 'legalBusinessName', label: 'Legal Business Name' },
-  { key: 'businessType', label: 'Business Type' },
-  { key: 'registrationNumber', label: 'Registration Number' },
-  { key: 'taxIdentificationNumber', label: 'NTN (Tax ID)' },
-  { key: 'salesTaxRegistrationNumber', label: 'STRN (Sales Tax Registration No.)' },
-  { key: 'businessEmail', label: 'Business Email' },
-  { key: 'contactNumber', label: 'Contact Number' },
-  { key: 'website', label: 'Website' },
-]
-
-const ADDRESS_FIELDS: SetupFieldDef<BusinessDetails>[] = [
-  { key: 'addressLine', label: 'Address Line' },
-  { key: 'city', label: 'City' },
-  { key: 'stateProvince', label: 'State / Province' },
-  { key: 'country', label: 'Country' },
-  { key: 'postalCode', label: 'Postal Code' },
-]
-
+/**
+ * Business Details: one tab per organization, because each business the
+ * company runs is its own legal entity with its own registration, tax
+ * numbers and contacts. A tab appears as soon as an organization is created
+ * in Company Profile, and disappears when it's removed.
+ */
 export function BusinessDetailsPage() {
-  const { businessDetails, updateBusinessDetails, isSavingBusinessDetails } = useSetup()
-  const form = useEditableForm(businessDetails)
+  const { organizations } = useSetup()
+  const [selected, setSelected] = useState<string | undefined>(organizations[0]?.id)
 
-  const fieldGridProps = {
-    values: form.values,
-    isEditing: form.isEditing,
-    onChange: (key: keyof BusinessDetails, value: string) => form.setField(key, value),
-  }
+  // Fall back to the first organization if the selected one was removed meanwhile.
+  const activeTab = organizations.some((o) => o.id === selected) ? selected : organizations[0]?.id
 
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Business Details"
-        description="View your organization's business, registration and contact details."
-        actions={
-          <EditActions
-            isEditing={form.isEditing}
-            isDirty={form.isDirty}
-            isSaving={isSavingBusinessDetails}
-            onEdit={form.startEditing}
-            onCancel={form.cancelEditing}
-            onSave={() => updateBusinessDetails(form.values, form.cancelEditing)}
-          />
-        }
+        description="Legal registration, tax numbers and contact details for each organization. Add organizations from Company Profile."
       />
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle>Business Information</CardTitle>
-              <CardDescription className="mt-1">Company registration and contact information.</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
+      <Tabs value={activeTab} onValueChange={setSelected}>
+        <TabsList className="h-auto flex-wrap justify-start">
+          {organizations.map((o) => (
+            <TabsTrigger key={o.id} value={o.id}>
+              {o.name}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-        <CardContent>
-          <SetupFieldGrid fields={BUSINESS_FIELDS} {...fieldGridProps} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <MapPin className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle>Business Address</CardTitle>
-              <CardDescription className="mt-1">Registered business location and mailing address.</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent>
-          <SetupFieldGrid fields={ADDRESS_FIELDS} {...fieldGridProps} />
-        </CardContent>
-      </Card>
+        {organizations.map((o) => (
+          <TabsContent key={o.id} value={o.id}>
+            <BusinessDetailsCard organization={o} />
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ExportCsvButton } from '@/components/shared/export-csv-button'
 import { formatDate } from '@/lib/utils'
 import { useCurrency } from '../hooks/useCurrency'
+import { Can } from '@/features/rbac/components/Can'
 
 interface APBoardProps {
   invoices: ApInvoice[]
@@ -67,9 +68,11 @@ export function APBoard({ invoices, onProcessPayment }: APBoardProps) {
                   <Badge variant={invoice.status === 'paid' ? 'success' : 'warning'}>{invoice.status === 'paid' ? 'Paid' : 'Unpaid'}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" variant="outline" disabled={invoice.status === 'paid'} onClick={() => onProcessPayment(invoice.id)}>
-                    Process Payment
-                  </Button>
+                  <Can resource="finance" action="approve">
+                    <Button size="sm" variant="outline" disabled={invoice.status === 'paid'} onClick={() => onProcessPayment(invoice.id)}>
+                      Process Payment
+                    </Button>
+                  </Can>
                 </TableCell>
               </TableRow>
             ))}

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn, formatDateTime } from '@/lib/utils'
 import type { MachineLoad } from '../utils/capacity'
+import { Can } from '@/features/rbac/components/Can'
 
 const STATUS_CONFIG: Record<Machine['status'], { label: string; variant: 'success' | 'default' | 'destructive' | 'warning'; icon: typeof CheckCircle2 }> = {
   running: { label: 'Running', variant: 'success', icon: CheckCircle2 },
@@ -69,14 +70,18 @@ export function CapacityGauges({
                 <div className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">
                   <p className="font-medium">{activeDowntime.reason}</p>
                   <p className="text-destructive/80">Since {formatDateTime(activeDowntime.start)}</p>
-                  <Button size="xs" variant="outline" className="mt-1.5 h-6 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => onResolveDowntime(machine)}>
-                    Mark resolved
-                  </Button>
+                  <Can resource="scheduler" action="write">
+                    <Button size="xs" variant="outline" className="mt-1.5 h-6 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => onResolveDowntime(machine)}>
+                      Mark resolved
+                    </Button>
+                  </Can>
                 </div>
               ) : (
-                <Button size="xs" variant="outline" className="w-full" onClick={() => onLogDowntime(machine)}>
-                  Log downtime
-                </Button>
+                <Can resource="scheduler" action="write">
+                  <Button size="xs" variant="outline" className="w-full" onClick={() => onLogDowntime(machine)}>
+                    Log downtime
+                  </Button>
+                </Can>
               )}
             </CardContent>
           </Card>

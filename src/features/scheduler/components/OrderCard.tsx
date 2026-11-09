@@ -5,6 +5,7 @@ import type { ProductionOrder } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { cn, formatDate } from '@/lib/utils'
+import { usePermissions } from '@/features/rbac/hooks/usePermissions'
 
 const PRIORITY_VARIANT: Record<ProductionOrder['priority'], 'muted' | 'default' | 'warning' | 'destructive'> = {
   low: 'muted',
@@ -24,7 +25,10 @@ interface OrderCardProps {
 export function OrderCard({ order, machineName, onOpen }: OrderCardProps) {
   // A frozen order's machine is down — dragging it to a new phase would misrepresent
   // work that physically cannot be progressing right now, so the drag handle is disabled.
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: order.id, disabled: order.isFrozen })
+  // Moving an order is also a write, so view-only users get no handle at all.
+  const { can } = usePermissions()
+  const isDraggable = !order.isFrozen && can('scheduler', 'write')
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: order.id, disabled: !isDraggable })
   const pct = order.quantityOrdered ? Math.round((order.quantityCompleted / order.quantityOrdered) * 100) : 0
 
   return (
@@ -43,7 +47,7 @@ export function OrderCard({ order, machineName, onOpen }: OrderCardProps) {
           <p className="truncate text-sm font-semibold">{order.orderNumber}</p>
           <p className="truncate text-xs text-muted-foreground">{order.productName}</p>
         </div>
-        {!order.isFrozen && (
+        {isDraggable && (
           <button
             {...attributes}
             {...listeners}
