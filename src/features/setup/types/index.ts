@@ -7,8 +7,9 @@ import type { IndustryType } from '@/features/auth/types'
 //
 // One company can run several businesses from a single FoundryOS account.
 // Each business is an Organization with its own profile (code, currency,
-// fiscal year…) and its own sites. Business Details — legal registration
-// and contact info — stay at the company level and are shared by all of them.
+// fiscal year…), its own Business Details (legal registration, tax numbers,
+// contact info — each business is usually its own legal entity) and its own
+// sites.
 // ---------------------------------------------------------------------------
 
 export const BASE_CURRENCIES = [
@@ -38,6 +39,7 @@ export interface Organization extends OrganizationProfile {
   id: string
 }
 
+/** One organization's legal registration and contact info. Created blank alongside the organization. */
 export interface BusinessDetails {
   legalBusinessName: string
   businessType: string

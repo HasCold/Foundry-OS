@@ -9,16 +9,17 @@ import { nextId } from '@/lib/utils'
 
 interface SetupState {
   organizations: Organization[]
-  businessDetails: BusinessDetails
+  /** organizationId -> that organization's business details. Every organization has an entry. */
+  businessDetails: Record<string, BusinessDetails>
   locations: OrganizationLocation[]
 
-  /** Returns the new organization's id so the screen can switch to it. */
+  /** Also creates the organization's (blank) business details. Returns its id so the screen can switch to it. */
   addOrganization: (profile: OrganizationProfile) => string
   updateOrganization: (organizationId: string, profile: OrganizationProfile) => void
-  /** Removes the organization together with its locations. The company always keeps at least one. */
+  /** Removes the organization together with its business details and locations. The company always keeps at least one. */
   removeOrganization: (organizationId: string) => void
 
-  updateBusinessDetails: (details: BusinessDetails) => void
+  updateBusinessDetails: (organizationId: string, details: BusinessDetails) => void
 
   /** The first location an organization adds becomes its primary one automatically. */
   addLocation: (organizationId: string, input: LocationInput) => void
@@ -26,6 +27,17 @@ interface SetupState {
   /** The primary location can't be removed — make another one primary first. */
   removeLocation: (locationId: string) => void
   setPrimaryLocation: (locationId: string) => void
+}
+
+const EMPTY_BUSINESS_DETAILS: BusinessDetails = {
+  legalBusinessName: '',
+  businessType: '',
+  registrationNumber: '',
+  taxIdentificationNumber: '',
+  salesTaxRegistrationNumber: '',
+  businessEmail: '',
+  contactNumber: '',
+  website: '',
 }
 
 const sameText = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -83,7 +95,10 @@ export const useSetupStore = create<SetupState>((set, get) => ({
   addOrganization: (profile) => {
     assertValidOrganization(profile, get().organizations, null)
     const organization: Organization = { id: nextId('org'), ...trimProfile(profile) }
-    set((state) => ({ organizations: [...state.organizations, organization] }))
+    set((state) => ({
+      organizations: [...state.organizations, organization],
+      businessDetails: { ...state.businessDetails, [organization.id]: EMPTY_BUSINESS_DETAILS },
+    }))
     return organization.id
   },
 
@@ -98,13 +113,20 @@ export const useSetupStore = create<SetupState>((set, get) => ({
   removeOrganization: (organizationId) => {
     findOrThrow(get().organizations, organizationId, 'Organization')
     if (get().organizations.length === 1) throw new Error('The company needs at least one organization.')
-    set((state) => ({
-      organizations: state.organizations.filter((o) => o.id !== organizationId),
-      locations: state.locations.filter((l) => l.organizationId !== organizationId),
-    }))
+    set((state) => {
+      const { [organizationId]: _removed, ...businessDetails } = state.businessDetails
+      return {
+        organizations: state.organizations.filter((o) => o.id !== organizationId),
+        businessDetails,
+        locations: state.locations.filter((l) => l.organizationId !== organizationId),
+      }
+    })
   },
 
-  updateBusinessDetails: (businessDetails) => set({ businessDetails }),
+  updateBusinessDetails: (organizationId, details) => {
+    findOrThrow(get().organizations, organizationId, 'Organization')
+    set((state) => ({ businessDetails: { ...state.businessDetails, [organizationId]: details } }))
+  },
 
   addLocation: (organizationId, input) => {
     findOrThrow(get().organizations, organizationId, 'Organization')

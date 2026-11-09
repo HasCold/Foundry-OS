@@ -6,7 +6,7 @@ import { toast } from '@/components/ui/toast-store'
 
 export function useSetup() {
   const organizations = useSetupStore((s) => s.organizations)
-  const businessDetails = useSetupStore((s) => s.businessDetails)
+  const businessDetailsByOrganization = useSetupStore((s) => s.businessDetails)
   const locations = useSetupStore((s) => s.locations)
   const queryClient = useQueryClient()
 
@@ -26,7 +26,7 @@ export function useSetup() {
 
   return {
     organizations,
-    businessDetails,
+    businessDetailsOf: (organizationId: string) => businessDetailsByOrganization[organizationId],
     locationsOf: (organizationId: string) => locations.filter((l) => l.organizationId === organizationId),
 
     // Every save takes an `onSaved` callback so forms close only once the change actually went through.
@@ -38,7 +38,8 @@ export function useSetup() {
     isSavingOrganization: addOrganizationMutation.isPending || updateOrganizationMutation.isPending,
     isRemovingOrganization: removeOrganizationMutation.isPending,
 
-    updateBusinessDetails: (details: BusinessDetails, onSaved?: () => void) => businessMutation.mutate(details, { onSuccess: onSaved }),
+    updateBusinessDetails: (organizationId: string, details: BusinessDetails, onSaved: () => void) =>
+      businessMutation.mutate({ organizationId, details }, { onSuccess: onSaved }),
     isSavingBusinessDetails: businessMutation.isPending,
 
     // `locationId: null` adds a new location to `organizationId`.

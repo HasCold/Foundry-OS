@@ -66,7 +66,7 @@ src/
     analytics/           OEE / yield / scrap / financial variance reporting
     finance/             General ledger, financial statements, AP/AR, cost variance
     rbac/                Roles, groups, user administration and permission enforcement
-    setup/               Organizations, their locations, and company business details
+    setup/               Organizations, their business details and locations
     dashboard/           Executive overview landing page
 ```
 
@@ -157,8 +157,10 @@ subscription: **Company → Organization → Location**.
   time zone) and its own locations (plants, warehouses, offices — exactly one
   primary per organization). *Add organization* opens a new tab with the same
   fields.
-- **Business Details** stays single — the company's legal registration and
-  contact info, shared by every organization.
+- **Business Details** (`/setup/business-details`) also has a tab per
+  organization — each business is usually its own legal entity, with its own
+  registration number, NTN, STRN and contacts. An organization's tab appears
+  (blank) as soon as it's created and goes away when it's removed.
 - Every user (except the super user, who spans all organizations) is placed in
   one organization and one of its locations, chosen in User Administration.
   An organization or location that users are still based at can't be removed.

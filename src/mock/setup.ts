@@ -23,15 +23,28 @@ export const organizations: Organization[] = [
   },
 ]
 
-export const businessDetails: BusinessDetails = {
-  legalBusinessName: 'FoundryOS Manufacturing (Demo)',
-  businessType: 'Private Limited Company (Demo)',
-  registrationNumber: 'DEMO-REG-001',
-  taxIdentificationNumber: 'DEMO-TAX-001',
-  salesTaxRegistrationNumber: 'DEMO-STRN-001',
-  businessEmail: 'info@example.com',
-  contactNumber: '+92 300 0000000',
-  website: 'https://example.com',
+/** organizationId -> business details. Every organization above has an entry. */
+export const businessDetails: Record<string, BusinessDetails> = {
+  'org-1': {
+    legalBusinessName: 'FoundryOS Manufacturing (Pvt.) Ltd. (Demo)',
+    businessType: 'Private Limited Company',
+    registrationNumber: 'DEMO-SECP-0012345',
+    taxIdentificationNumber: 'DEMO-NTN-1234567-8',
+    salesTaxRegistrationNumber: 'DEMO-STRN-32-77-8761-234-56',
+    businessEmail: 'info@manufacturing.example.com',
+    contactNumber: '+92 42 0000 0000',
+    website: 'https://manufacturing.example.com',
+  },
+  'org-2': {
+    legalBusinessName: 'FoundryOS Packaging (Pvt.) Ltd. (Demo)',
+    businessType: 'Private Limited Company',
+    registrationNumber: 'DEMO-SECP-0098765',
+    taxIdentificationNumber: 'DEMO-NTN-7654321-0',
+    salesTaxRegistrationNumber: 'DEMO-STRN-32-77-8761-987-65',
+    businessEmail: 'info@packaging.example.com',
+    contactNumber: '+92 42 0000 0001',
+    website: 'https://packaging.example.com',
+  },
 }
 
 export const locations: OrganizationLocation[] = [

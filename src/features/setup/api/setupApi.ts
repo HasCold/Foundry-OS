@@ -34,11 +34,10 @@ export const setupApi = {
       useSetupStore.getState().removeOrganization(organizationId)
     }),
 
-  updateBusinessDetails: (details: BusinessDetails) =>
+  updateBusinessDetails: (args: { organizationId: string; details: BusinessDetails }) =>
     mockNetwork(() => {
       authorize('setup.businessDetails', 'write')
-      useSetupStore.getState().updateBusinessDetails(details)
-      return true
+      useSetupStore.getState().updateBusinessDetails(args.organizationId, args.details)
     }),
 
   addLocation: (args: { organizationId: string; input: LocationInput }) =>
